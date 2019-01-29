@@ -23,7 +23,7 @@ public class Ball
     private int XEndMap, YEndMap;
     private int NumMap;
     private boolean wall;
-    private boolean lose;
+    private boolean lose, won;
 
 
     public Ball()
@@ -33,7 +33,7 @@ public class Ball
 
         EG = new EndGame();
 
-        XEndMap = 250;
+        XEndMap = 255;
 
         NumMap = 1;
 
@@ -41,7 +41,7 @@ public class Ball
 
         YEndMap = 45;
 
-        img = new Texture("MH.png");
+        img = new Texture("ball.png");
         position = new Vector2(100, 380);
 
         fly = true;
@@ -61,7 +61,7 @@ public class Ball
         if (position.x <= -20)
         {
 
-            switch (TransitTurn)
+           switch (TransitTurn)
             {
 
                 case 2: bg.pos.x = -7;
@@ -73,7 +73,7 @@ public class Ball
                         break;
 
                 case 3:
-                        bg.pos.x = -600;
+                        bg.pos.x = -1200;
 
                         position.x = 550;
 
@@ -108,29 +108,35 @@ public class Ball
     private void control()
     {
 
-        if(Gdx.input.isKeyPressed(Input.Keys.W))
+        if(!lose || !won)
         {
-            if(down)
+
+            if (Gdx.input.isKeyPressed(Input.Keys.W))
             {
-                position.y += JumpH;
-                fly = true;
-                vy = JumpH;
+                if (down)
+                {
+                    position.y += JumpH;
+                    fly = true;
+                    vy = JumpH;
+                }
+                down = false;
             }
-            down = false;
+
+            if (Gdx.input.isKeyPressed(Input.Keys.D))
+                position.x += speed;
+
+            if (!wall)
+            {
+                if (Gdx.input.isKeyPressed(Input.Keys.A))
+                    position.x -= speed;
+            }
+
+            if (Gdx.input.isKeyPressed(Input.Keys.S))
+            {
+                JumpH += 1;
+            }
+
         }
-
-        if(Gdx.input.isKeyPressed(Input.Keys.D))
-            position.x += speed;
-
-        if(!wall)
-        {
-            if (Gdx.input.isKeyPressed(Input.Keys.A))
-                position.x -= speed;
-        }
-
-        if(Gdx.input.isKeyPressed(Input.Keys.S))
-            speed += 0.1f;
-
 
     }
 
@@ -145,20 +151,6 @@ public class Ball
         }
     }
 
-    private void abyss()
-    {
-        if(position.x > XEndMap && position.y < 45 && TransitTurn == 3)
-        {
-           YEndMap = -1000000;
-
-           if(position.y <= -10)
-               lose = true;
-
-           if(Gdx.input.isKeyPressed(Input.Keys.SPACE))
-               restart();
-        }
-
-    }
 
     private void restart()
     {
@@ -187,7 +179,19 @@ public class Ball
 
         bg.render(batch);
         batch.draw(img, position.x, position.y);
-        if(lose) EG.lose(batch);
+
+        if(position.x >= XEndMap && position.y <= 44 && TransitTurn == 3 || lose) //abbys
+        {
+
+            lose = true;
+
+            YEndMap = -1000000;
+
+            EG.lose(batch);
+
+            if(Gdx.input.isKeyPressed(Input.Keys.SPACE))
+                restart();
+        }
 
     }
 
@@ -197,9 +201,10 @@ public class Ball
 
         bg.update();
 
+        if(!lose || !won)
+            control();
+
         wall();
-        abyss();
-        control();
         transition();
 
         if(position.y <= YEndMap) // Restrictions

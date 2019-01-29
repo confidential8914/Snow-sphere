@@ -15,7 +15,7 @@ public class EndGame
     {
 
         lose = new Texture("RestartBtn.png");
-        position = new Vector2(100, 100);
+        position = new Vector2(115, 200);
 
     }
 
