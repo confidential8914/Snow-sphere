@@ -10,6 +10,7 @@ public class Ball
 {
 
     Background bg;
+    EndGame EG;
 
     private Texture img;
     private Vector2 position;
@@ -22,6 +23,7 @@ public class Ball
     private int XEndMap, YEndMap;
     private int NumMap;
     private boolean wall;
+    private boolean lose;
 
 
     public Ball()
@@ -29,14 +31,17 @@ public class Ball
 
         bg = new Background();
 
-        TransitTurn = 1;
+        EG = new EndGame();
+
+        XEndMap = 250;
+
         NumMap = 1;
 
-        XEndMap = 355;
+        TransitTurn = 1;
 
         YEndMap = 45;
 
-        img = new Texture("ball.png");
+        img = new Texture("MH.png");
         position = new Vector2(100, 380);
 
         fly = true;
@@ -53,25 +58,49 @@ public class Ball
     private void transition()
     {
 
-        if(TransitTurn == 2)
+        if (position.x <= -20)
         {
-            if (position.x == -20)
+
+            switch (TransitTurn)
             {
-                bg.pos.x = -7;
 
-                position.x = 550;
+                case 2: bg.pos.x = -7;
 
-                TransitTurn = 1;
+                        position.x = 550;
+
+                        TransitTurn = 1;
+
+                        break;
+
+                case 3:
+                        bg.pos.x = -600;
+
+                        position.x = 550;
+
+                        TransitTurn = 2;
+
+                        break;
             }
+
         }
 
-        if(position.x == 600)
+        if(position.x >= 600 && TransitTurn < 3)
         {
             bg.pos.x = -600;
 
             position.x = 10;
 
             TransitTurn = 2;
+        }
+
+        if(position.x >= 550 && TransitTurn == 2)
+        {
+            bg.pos.x = -1200;
+
+            position.x = 10;
+
+            TransitTurn = 3;
+
         }
 
     }
@@ -100,7 +129,7 @@ public class Ball
         }
 
         if(Gdx.input.isKeyPressed(Input.Keys.S))
-            vy -= 0.1f;
+            speed += 0.1f;
 
 
     }
@@ -109,7 +138,7 @@ public class Ball
     {
         if(NumMap == 1 && TransitTurn == 1)
         {
-            if (position.x == -10)
+            if (position.x <= 8)
                 wall = true;
             else
                 wall = false;
@@ -118,11 +147,38 @@ public class Ball
 
     private void abyss()
     {
-
-        if(position.x == XEndMap && TransitTurn == 2)
+        if(position.x > XEndMap && position.y < 45 && TransitTurn == 3)
         {
-            YEndMap = -1000000;
+           YEndMap = -1000000;
+
+           if(position.y <= -10)
+               lose = true;
+
+           if(Gdx.input.isKeyPressed(Input.Keys.SPACE))
+               restart();
         }
+
+    }
+
+    private void restart()
+    {
+
+        lose = false;
+
+        TransitTurn = 1;
+        position.x = 100;
+        position.y = 380;
+
+        bg.pos.x = -7;
+
+        YEndMap = 45;
+
+        JumpH = 15;
+        speed = 5;
+
+        vx = vy = 0;
+        gravity = -0.6f;
+
 
     }
 
@@ -131,6 +187,7 @@ public class Ball
 
         bg.render(batch);
         batch.draw(img, position.x, position.y);
+        if(lose) EG.lose(batch);
 
     }
 
